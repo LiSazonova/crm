@@ -47,7 +47,6 @@ export default function PromotionForm({
   });
 
   const handleSubmit = async (values: PromotionFieldValues) => {
-    // ✅ Строгий гвард: не даём сабмитить, если компания не загружена
     if (!company) return;
 
     await mutateAsync({
