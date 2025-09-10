@@ -41,18 +41,15 @@ export default function PromotionForm({
   const { mutateAsync, isPending } = useMutation({
     mutationFn: createPromotion,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['promotions', companyId],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ['promotions'],
-        exact: true,
-      });
+      queryClient.invalidateQueries({ queryKey: ['promotions', companyId] });
+      queryClient.invalidateQueries({ queryKey: ['promotions'], exact: true });
     },
   });
 
   const handleSubmit = async (values: PromotionFieldValues) => {
+    // ✅ Строгий гвард: не даём сабмитить, если компания не загружена
+    if (!company) return;
+
     await mutateAsync({
       ...values,
       discount: Number(values.discount) || 0,
@@ -60,9 +57,7 @@ export default function PromotionForm({
       companyTitle: company.title,
     });
 
-    if (onSubmit) {
-      onSubmit(values);
-    }
+    onSubmit?.(values);
   };
 
   return (
