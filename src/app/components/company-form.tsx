@@ -39,13 +39,13 @@ export interface CompanyFormProps {
 export default function CompanyForm({ onSubmit }: CompanyFormProps) {
   const queryClient = useQueryClient();
 
-  const { data: categories } = useQuery({
+  const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
     queryFn: getCategories,
     staleTime: 10 * 1000,
   });
 
-  const { data: countries } = useQuery({
+  const { data: countries = [] } = useQuery({
     queryKey: ['countries'],
     queryFn: getCountries,
     staleTime: 10 * 1000,
@@ -54,24 +54,23 @@ export default function CompanyForm({ onSubmit }: CompanyFormProps) {
   const { mutateAsync, isPending } = useMutation({
     mutationFn: createCompany,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['companies'],
-      });
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
     },
   });
 
   const handleSubmit = async (values: CompanyFieldValues) => {
+    const categoryTitle =
+      categories.find(({ id }) => id === values.categoryId)?.title ?? '';
+    const countryTitle =
+      countries.find(({ id }) => id === values.countryId)?.title ?? '';
+
     await mutateAsync({
       ...values,
-      categoryTitle:
-        categories.find(({ id }) => id === values.categoryId)?.title ?? '',
-      countryTitle:
-        countries.find(({ id }) => id === values.countryId)?.title ?? '',
+      categoryTitle,
+      countryTitle,
     });
 
-    if (onSubmit) {
-      onSubmit(values);
-    }
+    onSubmit?.(values);
   };
 
   return (
@@ -96,6 +95,7 @@ export default function CompanyForm({ onSubmit }: CompanyFormProps) {
                 ),
               )}
             </InputField>
+
             <InputField
               required
               label="Country"
@@ -103,15 +103,17 @@ export default function CompanyForm({ onSubmit }: CompanyFormProps) {
               name="countryId"
               as="select"
             >
-              {countries?.map((country) => (
+              {countries.map((country) => (
                 <option key={country.id} value={country.id}>
                   {country.title}
                 </option>
               ))}
             </InputField>
           </div>
+
           <div className="flex flex-col flex-1 gap-5">
             <InputField required label="Name" placeholder="Name" name="title" />
+
             <InputField
               required
               label="Category"
@@ -119,18 +121,20 @@ export default function CompanyForm({ onSubmit }: CompanyFormProps) {
               name="categoryId"
               as="select"
             >
-              {categories?.map((category) => (
+              {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.title}
                 </option>
               ))}
             </InputField>
+
             <InputField
               required
               label="Joined date"
               type="date"
               name="joinedDate"
             />
+
             <InputField
               required
               label="Description"
@@ -139,6 +143,7 @@ export default function CompanyForm({ onSubmit }: CompanyFormProps) {
             />
           </div>
         </div>
+
         <Button type="submit" disabled={isPending}>
           Add company
         </Button>
