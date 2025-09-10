@@ -67,7 +67,8 @@ const sendRequest = async <T>(url: string, init?: RequestInit) => {
   if (!res.ok) {
     throw new Error(await res.text());
   }
-   return (await res.json()) as T;
+
+  return (await res.json()) as T;
 };
 
 export const getSummaryStats = (init?: RequestInit) => {
@@ -102,4 +103,33 @@ export const getPromotions = async (
     `${buildUrl('promotions')}?${stringifyQueryParams(params)}`,
     init,
   );
+};
+
+export const createCompany = async (
+  data: Omit<Company, 'id' | 'hasPromotions'>,
+  init?: RequestInit,
+) => {
+  return sendRequest<Company>(buildUrl('companies'), {
+    ...init,
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: {
+      ...(init && init.headers),
+      'content-type': 'application/json',
+    },
+  });
+};
+
+export const createPromotion = async (
+  data: Omit<Promotion, 'id'>,
+  init?: RequestInit,
+) => {
+  return sendRequest<Promotion>(buildUrl('promotions'), {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: {
+      ...(init && init.headers),
+      'content-type': 'application/json',
+    },
+  });
 };
